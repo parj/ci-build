@@ -1,20 +1,15 @@
 #!/bin/bash
 
 set -e
-readonly RED='\033[0;31m'
-readonly GREEN='\033[0;32m'
-readonly YELLOW='\033[0;33m'
-readonly NC='\033[0m' # No Color
 
 function main() {
     init
     check_errs $? "Init did not succeed"
-    setup_git
+    parseArgs "$@"
+    check_errs $? "Parse args did not succeed"
+    #setup_git
     check_errs $? "Git setup did not succeed "
-}
-
-function timestamp() {
-    date +"%Y-%m-%d %H:%M:%S,%3N"
+    buildArtifact
 }
 
 function usage() {
@@ -23,12 +18,14 @@ This is used for running CI builds.
 
 Available options:
     -h / --help             This message
-
+    -i / --importKey        Extracts private key and imports into GPG Keychain
 EOF
     exit 0
 }
 
 init() {
+    echo "Importing common.sh"
+    . common.sh
     echoColour "GREEN" "Starting..."
 }
 
@@ -40,10 +37,17 @@ setup_git() {
 
 
 function parseArgs() {
+    echoColour "YELLOW" "Parsing args"
     while (( "$#" )); do
         case "$1" in
             -h|--help)
                 usage
+                exit 0
+                shift
+                ;;
+            -i|--importKey)
+                decryptAndImportPrivateKeys
+                exit $?
                 shift
                 ;;
             --) # end argument parsing
@@ -62,32 +66,22 @@ function parseArgs() {
     done
 }
 
-function echoColour() {
-    local colour=""
+decryptAndImportPrivateKeys() {
+    if [[ -z ${PRIVATE_KEY} ]]; then
+        echoColour "RED" "Environment variable PRIVATE_KEY was not set. Exiting."
+        exit 1
+    fi
 
-    case $1 in
-        "RED")
-            colour=${RED} 
-            ;;
-        "YELLOW")
-            colour=${YELLOW}
-            ;;
-        "GREEN")
-            colour=${GREEN}
-            ;;
-        *)
-            colour=${NC}
-            ;;
-    esac
-    echo -e "${colour}$(timestamp) $2 ${NC}"
-
-}
-
-function check_errs() {
-  if [ "${1}" -ne "0" ]; then
-    echoColour "RED" "ERROR # ${1} : ${2}"
-    exit ${1}
-  fi
+    echoColour "YELLOW" "Unzipping archive"
+    unzip -o .ci/secret-private-key.zip -d .ci
+    echoColour "YELLOW" "Extracting private gpg key"
+    openssl aes-256-cbc -d -in .ci/secret-private-key -out .ci/gpg-private-key.asc -k "${PRIVATE_KEY}"
+    echoColour "YELLOW" "Importing gpg key"
+    gpg --batch --import .ci/gpg-private-key.asc
+    echoColour "GREEN" "List Keys"
+    gpg --list-secret-keys
+    gpg --list-public-keys
+    echoColour "GREEN" "Completed importing key"
 }
 
 pushTagsAndCommit() {
@@ -118,7 +112,7 @@ buildArtifact() {
 
         #Only perform full release on circleci
         if [[ $CIRCLE_BRANCH == "release" ]] && [[ -z $CIRCLE_TAG ]]; then
-            exeinf "Performing maven release"
+            echoColour "YELLOW" "Performing maven release"
             mvn -B -s .ci/settings.xml release:clean release:prepare release:perform -DscmCommentPrefix="[skip ci] [maven-release-plugin] "
 
             pushTagsAndCommit
@@ -126,11 +120,11 @@ buildArtifact() {
         fi
     else
         if [[ $TRAVIS == "true" ]]; then
-            exeinf "Travis Snapshot build"
+            echoColour "GREEN" "Travis Snapshot build"
             mvn -s .ci/settings.xml package docker:build -Dgpg.skip
         else
-            exeinf "Jenkins Snapshot build"
-            mvn -s .ci/settings.xml deploy docker:build
+            echoColour "GREEN" "Local Snapshot build"
+            mvn -s .ci/settings.xml install docker:build
         fi
     fi
 }

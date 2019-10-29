@@ -27,7 +27,7 @@ EOF
 
 init() {
     echo "Importing common.sh"
-    . common.sh
+    . ./common.sh
     echoColour "GREEN" "Starting..."
 }
 

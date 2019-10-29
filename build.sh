@@ -2,6 +2,8 @@
 
 set -e
 
+MAVEN_SETTINGS="resources/settings.xml"
+
 function main() {
     init
     check_errs $? "Init did not succeed"
@@ -73,11 +75,11 @@ decryptAndImportPrivateKeys() {
     fi
 
     echoColour "YELLOW" "Unzipping archive"
-    unzip -o ./secret-private-key.zip -d .ci
+    unzip -o resources/secret-private-key.zip -d resources/
     echoColour "YELLOW" "Extracting private gpg key"
-    openssl aes-256-cbc -d -in ./secret-private-key -out ./gpg-private-key.asc -k "${PRIVATE_KEY}"
+    openssl aes-256-cbc -d -in resources/secret-private-key -out resources/gpg-private-key.asc -k "${PRIVATE_KEY}"
     echoColour "YELLOW" "Importing gpg key"
-    gpg --batch --import ./gpg-private-key.asc
+    gpg --batch --import resources/gpg-private-key.asc
     echoColour "GREEN" "List Keys"
     gpg --list-secret-keys
     gpg --list-public-keys
@@ -107,13 +109,13 @@ buildArtifact() {
 
         #Just do a dry run on TravisCI
         if [[ $TRAVIS_BRANCH == "release" ]]; then
-            mvn -B -s ./settings.xml release:clean release:prepare -DdryRun=true
+            mvn -B -s $MAVEN_SETTINGS release:clean release:prepare -DdryRun=true
         fi
 
         #Only perform full release on circleci
         if [[ $CIRCLE_BRANCH == "release" ]] && [[ -z $CIRCLE_TAG ]]; then
             echoColour "YELLOW" "Performing maven release"
-            mvn -B -s ./settings.xml release:clean release:prepare release:perform -DscmCommentPrefix="[skip ci] [maven-release-plugin] "
+            mvn -B -s $MAVEN_SETTINGS release:clean release:prepare release:perform -DscmCommentPrefix="[skip ci] [maven-release-plugin] "
 
             pushTagsAndCommit
             buildDockerImageFromLatestTag
@@ -121,10 +123,10 @@ buildArtifact() {
     else
         if [[ $TRAVIS == "true" ]]; then
             echoColour "GREEN" "Travis Snapshot build"
-            mvn -s ./settings.xml package docker:build -Dgpg.skip
+            mvn -s $MAVEN_SETTINGS package docker:build -Dgpg.skip
         else
             echoColour "GREEN" "Local Snapshot build"
-            mvn -s ./settings.xml install docker:build
+            mvn -s ../pom.xml install docker:build
         fi
     fi
 }

@@ -2,6 +2,7 @@
 
 set -e
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 IMAGE_NAME="encryptkeycircleci"
 DOCKER_NAME="${IMAGE_NAME}_tmp"
 SECRET_KEY="secret-private-key"
@@ -23,7 +24,7 @@ main() {
 
 init() {
     echo "Importing common.sh"
-    . ../common.sh
+    . $DIR/../common.sh
     echoColour "GREEN" "Starting..."
 }
 
@@ -95,7 +96,7 @@ function prerequisites() {
 
 function buildDockerContainer() {
     echoColour "YELLOW" "Building container"
-    docker build -t ${IMAGE_NAME}:1.0 . --build-arg KEY=${KEY} --build-arg FILE=${FILE}
+    docker build -t ${IMAGE_NAME}:1.0 --build-arg KEY=${KEY} --build-arg FILE=${FILE} -f $DIR/Dockerfile .
 }
 
 function runDockerContainer() {
@@ -105,9 +106,9 @@ function runDockerContainer() {
 
 function copyFromDockerContainerAndZip() {
     echoColour "YELLOW" "Copying files across"
-    docker cp ${DOCKER_NAME}:/tmp/${SECRET_KEY} .
-    zip ${SECRET_KEY}.zip ${SECRET_KEY}
-    rm ${SECRET_KEY}
+    docker cp ${DOCKER_NAME}:/tmp/${SECRET_KEY} $DIR/../resources/
+    zip $DIR/../resources/${SECRET_KEY}.zip $DIR/../resources/${SECRET_KEY}
+    rm $DIR/../resources/${SECRET_KEY}
 }
 
 function stopAndRemoveDockerContainer() {

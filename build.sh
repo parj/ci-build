@@ -125,6 +125,9 @@ buildArtifact() {
         if [[ $TRAVIS == "true" ]]; then
             echoColour "GREEN" "Travis Snapshot build"
             mvn -s $MAVEN_SETTINGS package docker:build -Dgpg.skip
+        elif [[ $CICIRCLECI == "true "]]; then
+            echoColour "GREEN" "CircleCI Snapshot build"
+            mvn -s $MAVEN_SETTINGS deploy docker:build
         else
             echoColour "GREEN" "Local Snapshot build"
             mvn -s ../pom.xml install docker:build

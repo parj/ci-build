@@ -2,7 +2,8 @@
 
 set -e
 
-MAVEN_SETTINGS="resources/settings.xml"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+MAVEN_SETTINGS="$DIR/resources/settings.xml"
 
 function main() {
     init
@@ -27,7 +28,7 @@ EOF
 
 init() {
     echo "Importing common.sh"
-    . ./common.sh
+    . $DIR/common.sh
     echoColour "GREEN" "Starting..."
 }
 
@@ -75,11 +76,11 @@ decryptAndImportPrivateKeys() {
     fi
 
     echoColour "YELLOW" "Unzipping archive"
-    unzip -o resources/secret-private-key.zip -d resources/
+    unzip -o $DIR/resources/secret-private-key.zip -d $DIR/resources/
     echoColour "YELLOW" "Extracting private gpg key"
-    openssl aes-256-cbc -d -in resources/secret-private-key -out resources/gpg-private-key.asc -k "${PRIVATE_KEY}"
+    openssl aes-256-cbc -d -in $DIR/resources/secret-private-key -out $DIR/resources/gpg-private-key.asc -k "${PRIVATE_KEY}"
     echoColour "YELLOW" "Importing gpg key"
-    gpg --batch --import resources/gpg-private-key.asc
+    gpg --batch --import $DIR/resources/gpg-private-key.asc
     echoColour "GREEN" "List Keys"
     gpg --list-secret-keys
     gpg --list-public-keys

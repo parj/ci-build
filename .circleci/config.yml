@@ -2,12 +2,19 @@ version: 2
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/openjdk:11-jdk
 
     steps:
       - checkout
-      - run: git submodule update --init --recursive
-      - run: ./test.sh
+      - run: 
+          name: Init submodule
+          command: git submodule update --init --recursive
+      - run: 
+          name: Import GPG keys
+          command: ./build.sh -i
+      - run: 
+          name: Run Tests
+          command: ./test.sh
 
 workflows:
   version: 2

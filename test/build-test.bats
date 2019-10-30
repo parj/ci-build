@@ -5,7 +5,7 @@ load 'libs/bats-assert/load'
 
 @test "Should fail when trying to import key without encryption paraphrase" {
     run ./build.sh -i
-    if [[ $CIRCLECI == "true" ]] || [[ $TRAVISCI == "true" ]]; then
+    if [[ $CIRCLECI == "true" ]]; then
         assert_success
     else
         assert_failure
@@ -15,7 +15,7 @@ load 'libs/bats-assert/load'
 
 @test "Trigger a build and check for compile, test, jar, install, docker" {
     run ./build.sh
-    if [[ $CIRCLECI == "true" ]] || [[ $TRAVISCI == "true" ]]; then
+    if [[ $CIRCLECI == "true" ]] || [[ $TRAVIS == "true" ]]; then
         assert_success
     else
         assert_failure

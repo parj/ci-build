@@ -6,12 +6,31 @@ jobs:
 
     steps:
       - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "pom.xml" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run: mvn dependency:go-offline
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+
       - run: 
           name: Init submodule
           command: git submodule update --init --recursive
       - run: 
           name: Import GPG keys
           command: ./build.sh -i
+
+      - setup_remote_docker:
+          docker_layer_caching: false
+          
       - run: 
           name: Run Tests
           command: ./test.sh

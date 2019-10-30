@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/parj/ci-build.svg?style=svg)](https://circleci.com/gh/parj/ci-build) [![licence](https://img.shields.io/github/license/parj/ci-build)](https://choosealicense.com/licenses/unlicense/)
+[![CircleCI](https://circleci.com/gh/parj/ci-build.svg?style=svg)](https://circleci.com/gh/parj/ci-build) ![GitHub](https://img.shields.io/github/license/parj/ci-build)
 
 # What is this?
 

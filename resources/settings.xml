@@ -5,7 +5,7 @@
     <servers>
         <server>
             <id>ossrh</id>
-            <username>parj</username>
+            <username>${env.OSS_USERNAME}</username>
             <password>${env.OSS_PASSWORD}</password>
         </server>
         <server>

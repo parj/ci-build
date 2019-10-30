@@ -88,7 +88,6 @@ decryptAndImportPrivateKeys() {
         exit 1
     fi
 
-    echo $PRIVATE_KEY
     echoColour "YELLOW" "Unzipping archive"
     unzip -o $DIR/resources/secret-private-key.zip -d $DIR/resources/
     echoColour "YELLOW" "Extracting private gpg key"

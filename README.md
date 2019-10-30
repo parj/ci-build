@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/parj/ci-build.svg?style=svg)](https://circleci.com/gh/parj/ci-build) [![licence](https://img.shields.io/github/license/parj/ci-build)](https://choosealicense.com/licenses/unlicense/)
+
 # What is this?
 
 This is a repository to hold a simple step of Java CI scripts. The scripts can be used on TravisCI or CircleCI (or even Jenkins!).

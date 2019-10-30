@@ -1,1 +1,6 @@
 *.asc
+.classpath
+.project
+.settings/
+target/
+release.properties

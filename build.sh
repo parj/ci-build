@@ -4,13 +4,14 @@ set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 MAVEN_SETTINGS="$DIR/resources/settings.xml"
+DRY_RUN=false
 
 function main() {
     init
     check_errs $? "Init did not succeed"
     parseArgs "$@"
     check_errs $? "Parse args did not succeed"
-    #setup_git
+    setup_git
     check_errs $? "Git setup did not succeed "
     buildArtifact
 }
@@ -33,9 +34,11 @@ init() {
 }
 
 setup_git() {
-    echoColour "GREEN" "Setting up git"
-    git config --global user.email "ci@io.github.parjanya.org"
-    git config --global user.name "CI Build"
+    if [[ $CI=="true" ]]; then
+        echoColour "GREEN" "Setting up git"
+        git config --global user.email "ci@io.github.parjanya.org"
+        git config --global user.name "CI Build"
+    fi
 }
 
 
@@ -48,10 +51,20 @@ function parseArgs() {
                 exit 0
                 shift
                 ;;
-            -i|--importKey)
+            -i|--import-key)
                 decryptAndImportPrivateKeys
                 exit $?
                 shift
+                ;;
+            -d|--dry-run)
+                echoColour "YELLOW" "-d/--dry-run flagged. Setting release to dry run"
+                DRY_RUN="true"
+                shift
+                ;;
+            -s|--settings-file)
+                echoColour "GREEN" "-s/--settings-file set. Taking custom settings file $2"
+                MAVEN_SETTINGS=$2
+                shift 2
                 ;;
             --) # end argument parsing
                 shift
@@ -102,35 +115,36 @@ buildDockerImageFromLatestTag() {
     mvn package docker:build -DskipTests
 }
 
+performMavenRelease() {
+    if [[ $DRY_RUN=="true" ]]; then
+        echoColour "GREEN" "Running dry run"
+        mvn -B -s $MAVEN_SETTINGS release:clean release:prepare -DdryRun=true
+    else
+        echoColour "GREEN" "Performing a full release"
+        mvn -B -s $MAVEN_SETTINGS release:clean release:prepare release:perform -DscmCommentPrefix="[skip ci] [maven-release-plugin] "
+        pushTagsAndCommit
+        buildDockerImageFromLatestTag
+    fi
+}
+
 buildArtifact() {
     echoColour "YELLOW" "Starting build" 
 
     if [[ $TRAVIS_BRANCH == "release" ]] || [[ $CIRCLE_BRANCH = "release" ]]; then
         echoColour "YELLOW" "Release build"
 
-        #Just do a dry run on TravisCI
-        if [[ $TRAVIS_BRANCH == "release" ]]; then
-            mvn -B -s $MAVEN_SETTINGS release:clean release:prepare -DdryRun=true
-        fi
-
-        #Only perform full release on circleci
-        if [[ $CIRCLE_BRANCH == "release" ]] && [[ -z $CIRCLE_TAG ]]; then
-            echoColour "YELLOW" "Performing maven release"
-            mvn -B -s $MAVEN_SETTINGS release:clean release:prepare release:perform -DscmCommentPrefix="[skip ci] [maven-release-plugin] "
-
-            pushTagsAndCommit
-            buildDockerImageFromLatestTag
+         #Skip release build if its a tag build
+        if [[ -z $CIRCLE_TAG ]] && [[ -z $TRAVIS_TAG ]]; then
+            performMavenRelease
         fi
     else
-        if [[ $TRAVIS == "true" ]]; then
-            echoColour "GREEN" "Travis Snapshot build"
-            mvn -s $MAVEN_SETTINGS package docker:build -Dgpg.skip
-        elif [[ $CIRCLECI == "true" ]]; then
-            echoColour "GREEN" "CircleCI Snapshot build"
-            mvn -s $MAVEN_SETTINGS deploy docker:build
+        #BUG with travis where the GPG sign is not working. Fails with error unknow pin entry mode.
+        if [[ $CI == "true" ]] ; then
+            echoColour "GREEN" "Snapshot build"
+            mvn -s $MAVEN_SETTINGS deploy docker:build -DdryRun=$DRY_RUN
         else
             echoColour "GREEN" "Local Snapshot build"
-            mvn -s ../pom.xml install docker:build
+            mvn install docker:build -DdryRun=$DRY_RUN
         fi
     fi
 }

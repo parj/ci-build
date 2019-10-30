@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>io.github.parj</groupId>
+    <artifactId>minimalpom</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <licenses>
+        <license>
+            <name>The Unlicense</name>
+            <url>https://choosealicense.com/licenses/unlicense/</url>
+        </license>
+    </licenses>
+
+    <properties>
+        <io.fabric8.docker>0.31.0</io.fabric8.docker>
+    </properties>
+
+    <scm>
+        <url>https://github.com/parj/ci-build</url>
+        <connection>scm:git:git@github.com:parj/ci-build.git</connection>
+        <developerConnection>scm:git:git@github.com:parj/ci-build.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>${io.fabric8.docker}</version>
+                <extensions>true</extensions>
+
+                <configuration>
+                    <verbose>true</verbose>
+
+                    <images>
+                        <image>
+                            <alias>sample</alias>
+                            <name>parjanya/${project.name}</name>
+                            <build>
+                                <from>gcr.io/distroless/java:11</from>
+                                <maintainer>parjanya@gmail.com</maintainer>
+                                <tags>
+                                    <tag>latest</tag>
+                                    <tag>${project.version}</tag>
+                                    <tag>${git.commit.id.git.commit.id.abbrev}</tag>
+                                </tags>
+                                <assembly>
+                                    <!-- This is a predefined assembly.xml that will only copy your final artifact to the Docker image -->
+                                    <descriptorRef>artifact</descriptorRef>
+                                </assembly>
+                                <ports>
+                                    <port>8080</port>
+                                </ports>
+                                <entryPoint>
+                                    <exec>
+                                        <arg>java</arg>
+                                        <arg>-jar</arg>
+                                        <!-- This extra argument is so Tomcat can start faster due to lack of entropy -->
+                                        <arg>-Djava.security.egd=file:/dev/./urandom</arg>
+                                        <!-- /maven/ is the default dir that the plugin copies your artifact to -->
+                                        <arg>/maven/${project.artifactId}-${project.version}.${project.packaging}</arg>
+                                    </exec>
+                                </entryPoint>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

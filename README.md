@@ -41,3 +41,16 @@ An example TravisCI `.travis.yml`
     - openjdk11
 
     script: ".ci/build.sh"
+
+
+## How to encode keys for CircleCI
+
+Sensitive files for CircleCI should be encrypted via OpenSSL. CircleCI uses a specific version of OpenSSL. Instead of installing this version manually, it is simpler to download the Docker image and encrypt the file directly on it.
+
+A simple script has been done to achieve that. In `encodePrivateKey`, there is a script called `encodeKeys.sh` to achieve this.
+
+To encrypt call 
+
+    ./encodeKeys.sh --file gpg-private-key.asc --key AVERYSECUREANDRANDOMPASSWORD
+
+The script will provide a file called secret-private-key.zip which can then be included in the repo

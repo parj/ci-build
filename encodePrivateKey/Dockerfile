@@ -5,5 +5,7 @@ ARG FILE
 
 COPY --chown=circleci:circleci ["${FILE}", "/tmp/"]
 
-RUN openssl enc -aes-256-cbc -salt -in /tmp/${FILE} -out /tmp/secret-private-key -k ${KEY}
+WORKDIR /tmp
+
+RUN openssl enc -aes-256-cbc -salt -in ${FILE} -out secret-private-key -k ${KEY} && zip secret-private-key.zip secret-private-key
 

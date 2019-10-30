@@ -5,7 +5,7 @@ set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 IMAGE_NAME="encryptkeycircleci"
 DOCKER_NAME="${IMAGE_NAME}_tmp"
-SECRET_KEY="secret-private-key"
+SECRET_KEY="secret-private-key.zip"
 
 main() {
     init
@@ -107,8 +107,6 @@ function runDockerContainer() {
 function copyFromDockerContainerAndZip() {
     echoColour "YELLOW" "Copying files across"
     docker cp ${DOCKER_NAME}:/tmp/${SECRET_KEY} $DIR/../resources/
-    zip $DIR/../resources/${SECRET_KEY}.zip $DIR/../resources/${SECRET_KEY}
-    rm $DIR/../resources/${SECRET_KEY}
 }
 
 function stopAndRemoveDockerContainer() {

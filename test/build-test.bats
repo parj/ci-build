@@ -18,8 +18,12 @@ load 'libs/bats-assert/load'
 
 @test "Should fail when trying to import key without encryption paraphrase" {
     run ./build.sh -i
-    assert_failure
-    assert_output -p "Environment variable PRIVATE_KEY was not set."
+    if [[ $CIRCLECI == "true" ]]; then
+        assert_success
+    else
+        assert_failure
+        assert_output -p "Environment variable PRIVATE_KEY was not set."
+    fi
 }
 
 @test "Trigger a local build and check for compile, test, jar, install, docker" {
@@ -28,7 +32,12 @@ load 'libs/bats-assert/load'
     fi
 
     run ./build.sh
-    assert_success
+    if [[ $CIRCLECI == "true" ]]; then
+        assert_success
+    else
+        assert_failure
+    fi
+    
     assert_output -p "Building minimalpom 1.0-SNAPSHOT"
     assert_output -p "default-compile"
     assert_output -p "default-test"

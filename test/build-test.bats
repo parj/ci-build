@@ -3,6 +3,7 @@
 load 'libs/bats-support/load'
 load 'libs/bats-assert/load'
 
+#NOTE - This test will only succeed if there are no git changes that are staged for commit.
 @test "Trigger a CI build and perform a dry run" {
     export TRAVIS_BRANCH="release"
     run ./build.sh --dry-run

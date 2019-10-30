@@ -1,3 +1,11 @@
 language: java
 
+cache:
+  directories:
+  - ".autoconf"
+  - "$HOME/.m2"
+  - "$HOME/.cache"
+  - "$HOME/.gnupg"
+  - "$TRAVIS_BUILD_DIR/target"
+
 script: ./test.sh

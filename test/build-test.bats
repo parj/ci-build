@@ -21,5 +21,12 @@ load 'libs/bats-assert/load'
 }
 
 @test "Trigger a CI build and perform a dry run" {
-    
+    run export TRAVIS_BRANCH="release" && ./build.sh --dry-run && unset TRAVIS_BRANCH && mvn release:clean
+    assert_success
+    assert_output -p "Building minimalpom 1.0-SNAPSHOT"
+    assert_output -p "maven-release-plugin:2.5.3:prepare"
+    assert_output -p "Full run would be commit 1 files with message: '[skip ci] [maven-release-plugin] prepare release minimalpom-1.0'"
+    assert_output -p "Full run would be tagging working copy"
+    assert_output -p "Release preparation simulation complete"
+    assert_output -p "BUILD SUCCESS"
 }

@@ -28,7 +28,7 @@ load 'libs/bats-assert/load'
     fi
 
     run ./build.sh
-    assert_failure
+    assert_success
     assert_output -p "Building minimalpom 1.0-SNAPSHOT"
     assert_output -p "default-compile"
     assert_output -p "default-test"

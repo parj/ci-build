@@ -36,3 +36,8 @@ load 'libs/bats-assert/load'
     assert_output -p "docker-maven-plugin:0.31.0:build"
 }
 
+@test "Clean up of release" {
+    unset TRAVIS_BRANCH
+    run mvn release:clean
+    assert_success
+}

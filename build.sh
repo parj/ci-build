@@ -4,6 +4,7 @@ set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 MAVEN_SETTINGS="$DIR/resources/settings.xml"
+DOCKER_BUILD_PARAMS="docker:build"
 DRY_RUN=false
 
 function main() {
@@ -66,6 +67,11 @@ function parseArgs() {
                 MAVEN_SETTINGS=$2
                 shift 2
                 ;;
+            --skip-docker)
+                echoColour "GREEN" "--skip-docker set. Skipping docker build"
+                DOCKER_BUILD_PARAMS=""
+                shift
+                ;;
             --) # end argument parsing
                 shift
                 break
@@ -112,7 +118,7 @@ buildDockerImageFromLatestTag() {
     latesttag=$(git describe --tags)
     echoColour "GREEN" "Checking out latest tags ${latesttag}"
     git checkout ${latesttag}
-    mvn package docker:build -DskipTests
+    mvn package $DOCKER_BUILD_PARAMS -DskipTests
 }
 
 performMavenRelease() {
@@ -141,10 +147,12 @@ buildArtifact() {
         #BUG with travis where the GPG sign is not working. Fails with error unknow pin entry mode.
         if [[ $CI == "true" ]] ; then
             echoColour "GREEN" "Snapshot build"
-            mvn -s $MAVEN_SETTINGS deploy docker:build -DdryRun=$DRY_RUN
+
+            
+            mvn -s $MAVEN_SETTINGS deploy $DOCKER_BUILD_PARAMS -DdryRun=$DRY_RUN
         else
             echoColour "GREEN" "Local Snapshot build"
-            mvn install docker:build -DdryRun=$DRY_RUN
+            mvn install $DOCKER_BUILD_PARAMS -DdryRun=$DRY_RUN
         fi
     fi
 }

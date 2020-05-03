@@ -122,7 +122,7 @@ buildDockerImageFromLatestTag() {
 }
 
 performMavenRelease() {
-    if [[ $DRY_RUN=="true" ]]; then
+    if [[ $DRY_RUN == "true" ]]; then
         echoColour "GREEN" "Running dry run"
         mvn -B -s $MAVEN_SETTINGS release:clean release:prepare -DscmCommentPrefix="[skip ci] [maven-release-plugin] " -DdryRun=true
     else

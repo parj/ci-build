@@ -26,7 +26,7 @@ load 'libs/bats-assert/load'
     assert_output -p "default-test"
     assert_output -p "default-jar"
     assert_output -p "default-install"
-    assert_output -p "Built image to Docker daemon"
+    assert_output -p "Built and pushed image as"
 }
 
 #NOTE - This test will only succeed if there are no git changes that are staged for commit.

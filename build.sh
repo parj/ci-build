@@ -4,7 +4,7 @@ set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 MAVEN_SETTINGS="$DIR/resources/settings.xml"
-DOCKER_BUILD_PARAMS="docker:build"
+DOCKER_BUILD_PARAMS="jib:dockerBuild"
 DRY_RUN=false
 
 function main() {
@@ -35,7 +35,7 @@ init() {
 }
 
 setup_git() {
-    if [[ $CI=="true" ]]; then
+    if [[ $CI == "true" ]]; then
         echoColour "GREEN" "Setting up git"
         git config --global user.email "ci@io.github.parjanya.org"
         git config --global user.name "CI Build"

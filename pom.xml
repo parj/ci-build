@@ -13,7 +13,8 @@
     </licenses>
 
     <properties>
-        <io.fabric8.docker>0.31.0</io.fabric8.docker>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
     <scm>
@@ -41,9 +42,6 @@
                 <artifactId>jib-maven-plugin</artifactId>
                 <version>2.2.0</version>
                 <configuration>
-                    <from>
-                        <image>gcr.io/distroless/java:11</image>
-                    </from>
                     <to>
                         <image>docker.io/parjanya/${project.name}:${project.version}</image>
                     </to>

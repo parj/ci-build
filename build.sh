@@ -147,7 +147,6 @@ buildArtifact() {
         #BUG with travis where the GPG sign is not working. Fails with error unknow pin entry mode.
         if [[ $CI == "true" ]] ; then
             echoColour "GREEN" "Snapshot build"
-
             
             mvn -s $MAVEN_SETTINGS deploy $DOCKER_BUILD_PARAMS -DdryRun=$DRY_RUN
         else

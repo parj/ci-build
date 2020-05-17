@@ -4,7 +4,7 @@ set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 MAVEN_SETTINGS="$DIR/resources/settings.xml"
-DOCKER_BUILD_PARAMS="jib:dockerBuild"
+DOCKER_BUILD_PARAMS="jib:build"
 DRY_RUN=false
 
 function main() {

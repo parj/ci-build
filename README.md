@@ -4,16 +4,25 @@
 
 This is a repository to hold a simple step of Java CI scripts. The scripts can be used on TravisCI or CircleCI (or even Jenkins!).
 
+The steps ths script goes through:
+
+- Decrypt and import your gpg keys
+- Building a snapshot image if the branch is not `release` and publishing docker image to docker hub
+- Building a release image if the branch is `release` and publishing docker image to docker hub
+
 # How do I use this?
 
 In the root folder of your repository add the following
 
+```shell
     git submodule add https://github.com/parj/ci-build .ci
+```
 
-This clones this repository into your root under the directory .ci
+This adds a submodule to your repository under the directory .ci
 
 An example CircleCI `config.yml` for Java
 
+```yaml
     version: 2
     jobs:
     build:
@@ -28,22 +37,26 @@ An example CircleCI `config.yml` for Java
                 name: Add GPG key
                 command: .ci/build.sh -i
         
-            - run: .ci/build.sh
+            - run: 
+                name: Perform a java build
+                command: .ci/build.sh
 
     workflows:
         version: 2
         build_and_test:
             jobs:
             - build
+```
 
 An example TravisCI `.travis.yml`
 
+```yaml
     language: java
     jdk:
     - openjdk11
 
     script: ".ci/build.sh"
-
+```
 
 ## How to encode keys for CircleCI
 
@@ -53,6 +66,8 @@ A simple script has been done to achieve that. In `encodePrivateKey`, there is a
 
 To encrypt call 
 
+```shell
     ./encodeKeys.sh --file gpg-private-key.asc --key AVERYSECUREANDRANDOMPASSWORD
+```
 
-The script will provide a file called secret-private-key.zip which can then be included in the repo
+The script will provide a file called `secret-private-key.zip` which can then be included in the repo

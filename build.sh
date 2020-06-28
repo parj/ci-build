@@ -22,8 +22,11 @@ function usage() {
 This is used for running CI builds. 
 
 Available options:
+    -d / --dry-run          Used to dry run releases in maven
     -h / --help             This message
     -i / --importKey        Extracts private key and imports into GPG Keychain
+    -s / --settings-file    Used to for provding a custom location for maven settings file - settings.xml
+    --skip-docker           Skips building docker image
 EOF
     exit 0
 }
@@ -121,20 +124,26 @@ buildDockerImageFromLatestTag() {
     mvn package $DOCKER_BUILD_PARAMS -DskipTests
 }
 
+dockerLogin() {
+    echoColour "YELLOW" "Logging into docker"
+    echo -n ${DOCKER_PASSWORD} | docker login --username ${DOCKER_USERNAME} --password-stdin
+    echoColour "GREEN" "Logged into docker"
+}
+
 performMavenRelease() {
     if [[ $DRY_RUN == "true" ]]; then
         echoColour "GREEN" "Running dry run"
         mvn -B -s $MAVEN_SETTINGS release:clean release:prepare -DscmCommentPrefix="[skip ci] [maven-release-plugin] " -DdryRun=true
     else
         echoColour "GREEN" "Performing a full release"
-        mvn -B -s $MAVEN_SETTINGS release:clean release:prepare release:perform -DscmCommentPrefix="[skip ci] [maven-release-plugin] "
+        mvn -B -s $MAVEN_SETTINGS release:clean release:prepare release:perform -DscmCommentPrefix="[skip ci] [maven-release-plugin] " $DOCKER_BUILD_PARAMS 
         pushTagsAndCommit
-        buildDockerImageFromLatestTag
     fi
 }
 
 buildArtifact() {
     echoColour "YELLOW" "Starting build" 
+    dockerLogin
 
     if [[ $TRAVIS_BRANCH == "release" ]] || [[ $CIRCLE_BRANCH = "release" ]]; then
         echoColour "YELLOW" "Release build"

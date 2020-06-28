@@ -118,9 +118,11 @@ pushTagsAndCommit() {
 
 #Required as mvn:release bumps tags
 buildDockerImageFromLatestTag() {
-    latesttag=$(git describe --tags)
-    echoColour "GREEN" "Checking out latest tags ${latesttag}"
-    git checkout ${latesttag}
+    latesttag=$(git describe --tags $(git rev-list --tags --max-count=1))
+    echoColour "YELLOW" "Reset git repository"
+    git reset --hard
+    echoColour "GREEN" "Checking out latest tag ${latesttag}"
+    git checkout tags/${latesttag} -b ${latesttag}
     mvn package $DOCKER_BUILD_PARAMS -DskipTests
 }
 
@@ -136,7 +138,8 @@ performMavenRelease() {
         mvn -B -s $MAVEN_SETTINGS release:clean release:prepare -DscmCommentPrefix="[skip ci] [maven-release-plugin] " -DdryRun=true
     else
         echoColour "GREEN" "Performing a full release"
-        mvn -B -s $MAVEN_SETTINGS release:clean release:prepare release:perform -DscmCommentPrefix="[skip ci] [maven-release-plugin] " $DOCKER_BUILD_PARAMS 
+        mvn -B -s $MAVEN_SETTINGS release:clean release:prepare release:perform -DscmCommentPrefix="[skip ci] [maven-release-plugin] "
+        buildDockerImageFromLatestTag
         pushTagsAndCommit
     fi
 }

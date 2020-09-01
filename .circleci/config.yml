@@ -1,4 +1,5 @@
-version: 2
+version: 2.1
+
 jobs:
   test:
     docker:
@@ -20,6 +21,11 @@ jobs:
           paths:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
+      
+      - run:
+          name: "echo an env var that is part of our context"
+          command: |
+            echo $PRIVATE_KEY
 
       - run: 
           name: Init submodule
@@ -41,7 +47,6 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
 workflows:
-  version: 2
   build_and_test:
     jobs:
       - test:

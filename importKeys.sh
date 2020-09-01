@@ -24,7 +24,7 @@ decryptAndImportPrivateKeys() {
     exeinf "Unzipping archive"
     unzip -o .ci/secret-private-key.zip -d .ci
     exeinf "Extracting private gpg key"
-    openssl aes-256-cbc -d -in .ci/secret-private-key -out .ci/gpg-private-key.asc -k "${PRIVATE_KEY}"
+    openssl aes-256-cbc -d -md sha512 -pbkdf2 -iter 100000 -in .ci/secret-private-key -out .ci/gpg-private-key.asc -k "${PRIVATE_KEY}"
     exeinf "Importing gpg key"
     gpg --batch --import .ci/gpg-private-key.asc
     exeinf "List Keys"

@@ -92,21 +92,7 @@ function parseArgs() {
 }
 
 decryptAndImportPrivateKeys() {
-    if [[ -z ${PRIVATE_KEY} ]]; then
-        echoColour "RED" "Environment variable PRIVATE_KEY was not set. Exiting."
-        exit 1
-    fi
-
-    echoColour "YELLOW" "Unzipping archive"
-    unzip -o $DIR/resources/secret-private-key.zip -d $DIR/resources/
-    echoColour "YELLOW" "Extracting private gpg key"
-    openssl aes-256-cbc -d -in $DIR/resources/secret-private-key -out $DIR/resources/gpg-private-key.asc -k "${PRIVATE_KEY}"
-    echoColour "YELLOW" "Importing gpg key"
-    gpg --batch --import $DIR/resources/gpg-private-key.asc
-    echoColour "GREEN" "List Keys"
-    gpg --list-secret-keys
-    gpg --list-public-keys
-    echoColour "GREEN" "Completed importing key"
+    ./importKeys.sh
 }
 
 pushTagsAndCommit() {

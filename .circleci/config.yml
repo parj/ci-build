@@ -22,11 +22,6 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
       
-      - run:
-          name: "echo an env var that is part of our context"
-          command: |
-            echo $PRIVATE_KEY
-
       - run: 
           name: Init submodule
           command: git submodule update --init --recursive

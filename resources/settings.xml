@@ -22,6 +22,10 @@
             <username>${env.DOCKER_USERNAME}</username>
             <password>${env.DOCKER_PASSWORD}</password>
         </server>
+        <server>
+            <id>github</id>
+            <password>${env.GH_TOKEN_SITE}</password>
+        </server>
     </servers>
 
     <profiles>

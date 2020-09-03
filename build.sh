@@ -141,7 +141,6 @@ performMavenRelease() {
         mvn -B -s $MAVEN_SETTINGS release:clean release:prepare release:perform -DscmCommentPrefix="[skip ci] [maven-release-plugin] "
         buildDockerImageFromLatestTag
         pushTagsAndCommit
-        mvn site
     fi
 }
 
